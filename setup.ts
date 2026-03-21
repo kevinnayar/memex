@@ -148,7 +148,7 @@ const bootstrapAgent = (agentInfo: AgentBootstrapInfo) => {
 };
 
 const initializeMemory = (projectRoot: string) => {
-  const templatesDir = join(projectRoot, ".agents/memory/templates");
+  const templatesDir = join(projectRoot, ".agents/memory.templates");
   const memoryDir = join(projectRoot, ".agents/memory");
 
   if (!existsSync(templatesDir)) {

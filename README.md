@@ -28,12 +28,12 @@ Setup will prompt for your name and a description of your notes.
 
 ## What's Included
 
-| Component         | Description                                    |
-| ----------------- | ---------------------------------------------- |
-| `docs/`           | Your knowledge corpus (gitignored, private)    |
-| `docs/plans/`     | Plans and design documents (tracked)           |
-| `.agents/memory/` | Persistent memory across sessions (gitignored) |
-| `.agents/skills/` | Agent skills for search, memory, Q&A           |
+| Component                   | Description                                    |
+| --------------------------- | ---------------------------------------------- |
+| `docs/`                     | Your knowledge corpus (gitignored, private)    |
+| `.agents/memory/`           | Persistent memory across sessions (gitignored) |
+| `.agents/memory.templates/` | Persistent memory templates as examples        |
+| `.agents/skills/`           | Agent skills for search, memory, Q&A           |
 
 ## Memory System
 
