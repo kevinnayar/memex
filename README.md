@@ -49,6 +49,28 @@ Two layers of memory:
 - **Durable facts** → MEMORY.md (preferences, decisions, patterns)
 - **Daily context** → daily/YYYY-MM-DD.md (session notes)
 
+## Syncing to Dropbox
+
+Since your docs folder (defined by `docsPath` in config.json) is gitignored, you can sync it separately with Dropbox.
+
+If your docs are already in Dropbox:
+
+```bash
+ln -s ~/Dropbox/docs ~/src/memex/docs
+```
+
+If starting fresh:
+
+```bash
+# Move docs to Dropbox
+mv docs ~/Dropbox/docs
+
+# Symlink back
+ln -s ~/Dropbox/docs docs
+```
+
+Replace `docs` with your actual docs folder name if different.
+
 ## Dependencies
 
 - [qmd](https://github.com/gptscript-ai/qmd) - Semantic search over docs
