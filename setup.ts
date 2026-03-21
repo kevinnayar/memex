@@ -37,7 +37,15 @@ const SUPPORTED_AGENTS: Omit<AgentBootstrapInfo, "projectRoot">[] = [
   },
 ];
 
-const log = (value: string) => console.log(`\n${value}...`);
+const LOGO = `
+    ███╗   ███╗███████╗███╗   ███╗███████╗██╗  ██╗
+    ████╗ ████║██╔════╝████╗ ████║██╔════╝╚██╗██╔╝
+    ██╔████╔██║█████╗  ██╔████╔██║█████╗   ╚███╔╝ 
+    ██║╚██╔╝██║██╔══╝  ██║╚██╔╝██║██╔══╝   ██╔██╗ 
+    ██║ ╚═╝ ██║███████╗██║ ╚═╝ ██║███████╗██╔╝ ██╗
+    ╚═╝     ╚═╝╚══════╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝
+        The machine remembers what you forget     
+`;
 
 const prompt = (question: string): Promise<string> => {
   return new Promise((resolve) => {
@@ -215,44 +223,48 @@ const qmdIndexAndEmbed = () => {
   }
 };
 
-const setup = async () => {
+const main = async () => {
   const __dirname = dirname(fileURLToPath(import.meta.url));
   const projectRoot = __dirname;
 
-  const configPath = join(__dirname, "config.json");
-  log(`Loading config`);
-  const config = await loadConfig(configPath);
-  log(`Setting up memex for ${config.user}`);
+  console.log("\n\n");
+  console.log(LOGO);
+  console.log("\n\n");
 
-  log("Creating docs directory");
+  const configPath = join(__dirname, "config.json");
+  console.log(`Loading config\n`);
+  const config = await loadConfig(configPath);
+  console.log(`Setting up memex for ${config.user}\n`);
+
+  console.log("Creating docs directory\n");
   mkdirSync(config.docsPath, { recursive: true });
 
-  log("Bootstrapping agents");
+  console.log("Bootstrapping agents\n");
   const agentsInfo = SUPPORTED_AGENTS.map(
     (a) => ({ ...a, projectRoot }) satisfies AgentBootstrapInfo,
   );
   await Promise.all(agentsInfo.map(bootstrapAgent));
 
-  log("Initializing memory from templates");
+  console.log("Initializing memory from templates\n");
   initializeMemory(projectRoot);
 
   const docsPath = join(projectRoot, config.docsPath);
-  log("Generating qmd config");
+  console.log("Generating qmd config\n");
   generateQmdConfig(docsPath, config.description);
 
-  log("Setup NodeJS for qmd");
+  console.log("Setup NodeJS for qmd\n");
   qmdForceNodeJS();
 
-  log("Indexing docs");
+  console.log("Indexing docs\n");
   qmdIndexAndEmbed();
 
-  log("\n=== Setup complete! ===");
-  log(
+  console.log("\n=== Setup complete! ===\n");
+  console.log(
     `Your memex is ready. Start adding notes to ${config.docsPath}/ "or ask me to remember something.`,
   );
 };
 
-setup().catch((e) => {
+main().catch((e) => {
   console.error(e);
   process.exit(1);
 });
