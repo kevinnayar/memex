@@ -11,13 +11,10 @@ Personal knowledge management with AI agents. The machine remembers what you for
 ## Setup
 
 ```bash
-# 1. Copy and edit config
-cp config.example.json config.json
-# Edit config.json with your name and description
-
-# 2. Run setup
 ./setup.sh
 ```
+
+Setup will prompt for your name and a description of your notes.
 
 ## What's Included
 

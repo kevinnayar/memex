@@ -11,13 +11,8 @@ import {
 } from "fs";
 import { homedir } from "os";
 import { dirname, join } from "path";
+import { createInterface } from "readline";
 import { fileURLToPath } from "url";
-
-type AgentBootstrapInfo = {
-  name: string;
-  index: string;
-  projectRoot: string;
-};
 
 type ConfigurationType = {
   user: string;
@@ -25,39 +20,87 @@ type ConfigurationType = {
   docsPath: string;
 };
 
-const log = (value: string) => console.log(`\n=> ${value}...`);
+type AgentBootstrapInfo = {
+  name: string;
+  index: string;
+  projectRoot: string;
+};
 
-const getAgentsInfo = (projectRoot: string): AgentBootstrapInfo[] => [
+const SUPPORTED_AGENTS: Omit<AgentBootstrapInfo, "projectRoot">[] = [
   {
     name: "opencode",
     index: "CLAUDE.md",
-    projectRoot,
   },
   {
     name: "claude",
     index: "AGENTS.md",
-    projectRoot,
   },
 ];
 
-const loadConfig = (configPath: string): ConfigurationType => {
+const log = (value: string) => console.log(`\n${value}...`);
+
+const prompt = (question: string): Promise<string> => {
+  return new Promise((resolve) => {
+    const rl = createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+    rl.question(question, (answer) => {
+      rl.close();
+      resolve(answer);
+    });
+  });
+};
+
+const createConfig = async (configPath: string): Promise<ConfigurationType> => {
+  let user = "";
+  let description = "";
+
+  console.log("\n=== Memex Setup ===\n");
+  console.log("Let's set up your config.json\n");
+
+  while (!user.trim()) {
+    user = await prompt("Your name: ");
+    if (!user.trim()) {
+      console.log("Name is required.\n");
+    }
+  }
+
+  console.log("\nDescription of your notes (for semantic search context):");
+  console.log(
+    "Example: Personal notes about engineering, hiking, and cooking\n",
+  );
+  while (!description.trim()) {
+    description = await prompt("Description: ");
+    if (!description.trim()) {
+      console.log("Description is required.\n");
+    }
+  }
+
+  const config: ConfigurationType = {
+    user: user.trim(),
+    description: description.trim(),
+    docsPath: "docs",
+  };
+
+  writeFileSync(configPath, JSON.stringify(config, null, 2));
+  console.log(`\nCreated ${configPath}`);
+  return config;
+};
+
+const loadConfig = async (configPath: string): Promise<ConfigurationType> => {
   if (!existsSync(configPath)) {
-    console.error(
-      "config.json not found. Copy config.example.json to config.json and update it.",
-    );
-    process.exit(1);
+    return createConfig(configPath);
   }
 
   try {
     const config = JSON.parse(
       readFileSync(configPath, "utf-8"),
     ) as ConfigurationType;
-    console.log(`Setting up memex for ${config.user}...`);
-
     return config;
-  } catch (e) {
-    console.error("Config.json was not parseable.");
-    process.exit(1);
+  } catch {
+    console.error("config.json is not valid JSON. Let's recreate it.\n");
+    return createConfig(configPath);
   }
 };
 
@@ -96,53 +139,6 @@ const bootstrapAgent = (agentInfo: AgentBootstrapInfo) => {
   }
 };
 
-const generateQmdConfig = (docsPath: string, description: string) => {
-  const qmdConfigPath = join(homedir(), ".config/qmd/index.yml");
-  mkdirSync(dirname(qmdConfigPath), { recursive: true });
-
-  const yamlContent = `collections:
-  memex:
-    path: ${docsPath}
-    pattern: "**/*.md"
-    context:
-      "": ${description}
-`;
-
-  console.log(`Writing qmcConfig to ${qmdConfigPath}...`);
-  writeFileSync(qmdConfigPath, yamlContent);
-};
-
-const fixQmdForBun = () => {
-  const qmdPath = join(homedir(), ".bun/bin/qmd");
-  if (existsSync(qmdPath)) {
-    const qmdContent = readFileSync(qmdPath, "utf-8");
-    // Check if already patched
-    if (!qmdContent.includes("# Force Node")) {
-      const patchedContent = qmdContent
-        .replace(
-          /DIR="\.\.\/\.\.\/bin" && pwd\)/,
-          '# Force Node (sqlite-vec crashes on Bun)\nDIR="../../bin")',
-        )
-        .replace(
-          /exec bun "\$DIR\/dist\/cli\/qmd\.js" "\$@"/,
-          'exec node "$DIR/dist/cli/qmd.js" "$@"',
-        );
-      writeFileSync(qmdPath, patchedContent);
-    }
-  }
-};
-
-const qmdIndexAndEmbed = () => {
-  try {
-    execSync("qmd update", { stdio: "inherit" });
-    execSync("qmd embed", { stdio: "inherit" });
-  } catch (e) {
-    console.warn(
-      'Warning: qmd indexing failed. You may need to run "qmd update && qmd embed" manually.',
-    );
-  }
-};
-
 const initializeMemory = (projectRoot: string) => {
   const templatesDir = join(projectRoot, ".agents/memory/templates");
   const memoryDir = join(projectRoot, ".agents/memory");
@@ -173,19 +169,68 @@ const initializeMemory = (projectRoot: string) => {
   }
 };
 
+const generateQmdConfig = (docsPath: string, description: string) => {
+  const qmdConfigPath = join(homedir(), ".config/qmd/index.yml");
+  mkdirSync(dirname(qmdConfigPath), { recursive: true });
+
+  const yamlContent = `collections:
+  memex:
+    path: ${docsPath}
+    pattern: "**/*.md"
+    context:
+      "": ${description}
+`;
+
+  console.log(`Writing qmcConfig to ${qmdConfigPath}...`);
+  writeFileSync(qmdConfigPath, yamlContent);
+};
+
+const qmdForceNodeJS = () => {
+  const qmdPath = join(homedir(), ".bun/bin/qmd");
+  if (existsSync(qmdPath)) {
+    const qmdContent = readFileSync(qmdPath, "utf-8");
+    if (!qmdContent.includes("# Force Node")) {
+      const patchedContent = qmdContent
+        .replace(
+          /DIR="\.\.\/\.\.\/bin" && pwd\)/,
+          '# Force Node (sqlite-vec crashes on Bun)\nDIR="../../bin")',
+        )
+        .replace(
+          /exec bun "\$DIR\/dist\/cli\/qmd\.js" "\$@"/,
+          'exec node "$DIR/dist/cli/qmd.js" "$@"',
+        );
+      writeFileSync(qmdPath, patchedContent);
+    }
+  }
+};
+
+const qmdIndexAndEmbed = () => {
+  try {
+    execSync("qmd update", { stdio: "inherit" });
+    execSync("qmd embed", { stdio: "inherit" });
+  } catch {
+    console.warn(
+      'Warning: qmd indexing failed. You may need to run "qmd update && qmd embed" manually.',
+    );
+  }
+};
+
 const setup = async () => {
   const __dirname = dirname(fileURLToPath(import.meta.url));
   const projectRoot = __dirname;
 
   const configPath = join(__dirname, "config.json");
-  log(`Loading config from ${configPath}`);
-  const config = loadConfig(configPath);
+  log(`Loading config`);
+  const config = await loadConfig(configPath);
+  log(`Setting up memex for ${config.user}`);
 
   log("Creating docs directory");
   mkdirSync(config.docsPath, { recursive: true });
 
-  log("Bootstraping agents");
-  const agentsInfo = getAgentsInfo(projectRoot);
+  log("Bootstrapping agents");
+  const agentsInfo = SUPPORTED_AGENTS.map(
+    (a) => ({ ...a, projectRoot }) satisfies AgentBootstrapInfo,
+  );
   await Promise.all(agentsInfo.map(bootstrapAgent));
 
   log("Initializing memory from templates");
@@ -195,13 +240,16 @@ const setup = async () => {
   log("Generating qmd config");
   generateQmdConfig(docsPath, config.description);
 
-  log("Fixing qmd for Bun");
-  fixQmdForBun();
+  log("Setup NodeJS for qmd");
+  qmdForceNodeJS();
 
   log("Indexing docs");
   qmdIndexAndEmbed();
 
-  console.log("Setup complete!");
+  log("\n=== Setup complete! ===");
+  log(
+    `Your memex is ready. Start adding notes to ${config.docsPath}/ "or ask me to remember something.`,
+  );
 };
 
 setup().catch((e) => {
