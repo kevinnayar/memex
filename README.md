@@ -4,32 +4,45 @@
 
 — [Wikipedia](https://en.wikipedia.org/wiki/Memex)
 
+## Overview
+
+Personal knowledge management with AI agents. The machine remembers what you forget.
+
 ## Setup
 
 ```bash
-# Install qmd (requires Node, not Bun - sqlite-vec crashes on Bun)
-bun install -g https://github.com/tobi/qmd
+# 1. Copy and edit config
+cp config.example.json config.json
+# Edit config.json with your name and description
 
-# Fix qmd to use Node instead of Bun (if needed)
-# Edit ~/.bun/bin/qmd and replace the exec line:
-#   exec node "$DIR/dist/cli/qmd.js" "$@"
-
-# Configure qmd to index docs folder (update path for your machine)
-mkdir -p ~/.config/qmd
-cat > ~/.config/qmd/index.yml << 'EOF'
-collections:
-  memex:
-    path: /Users/kevinnayar/src/memex/docs
-    pattern: "**/*.md"
-    context:
-      "": Kevin's personal notes, documentation, knowledge base, and ideas
-EOF
-
-# Run setup script (creates docs/ folder if missing)
+# 2. Run setup
 ./setup.sh
-
-# Index docs (BM25 + vectors)
-qmd update && qmd embed
 ```
 
-**Note:** The `docs/` folder is gitignored - this is where your knowledge lives. The setup script creates it automatically.
+## What's Included
+
+| Component | Description |
+|-----------|-------------|
+| `docs/` | Your knowledge corpus (gitignored, private) |
+| `docs/plans/` | Plans and design documents (tracked) |
+| `.agents/memory/` | Persistent memory across sessions (gitignored) |
+| `.agents/skills/` | Agent skills for search, memory, Q&A |
+
+## Memory System
+
+Two layers of memory:
+
+- **MEMORY.md** - Curated long-term (decisions, preferences, durable facts)
+- **daily/YYYY-MM-DD.md** - Session logs (context, notes)
+
+### Tips
+
+- Say **"remember this"** explicitly - don't assume the model will remember
+- Ask **"write this to memory"** if you want something to stick
+- **Durable facts** → MEMORY.md (preferences, decisions, patterns)
+- **Daily context** → daily/YYYY-MM-DD.md (session notes)
+
+## Dependencies
+
+- [qmd](https://github.com/gptscript-ai/qmd) - Semantic search over docs
+- [Bun](https://bun.sh) - JavaScript runtime (installed by setup)
