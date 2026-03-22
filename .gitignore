@@ -6,6 +6,7 @@ Thumbs.db
 docs
 config.json
 node_modules
+bun.lock
 
 # Agents
 .claude
@@ -14,4 +15,8 @@ node_modules
 # Memory (runtime, not versioned)
 .agents/memory/*.md
 .agents/memory/daily/
+
+# Templates are tracked (empty starters)
+!.agents/memory.templates/
+.agents/memory.templates/
 
