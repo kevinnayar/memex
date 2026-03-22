@@ -1,13 +1,12 @@
 # Memex
 
 ```
-    ███╗   ███╗███████╗███╗   ███╗███████╗██╗  ██╗
-    ████╗ ████║██╔════╝████╗ ████║██╔════╝╚██╗██╔╝
-    ██╔████╔██║█████╗  ██╔████╔██║█████╗   ╚███╔╝
-    ██║╚██╔╝██║██╔══╝  ██║╚██╔╝██║██╔══╝   ██╔██╗
-    ██║ ╚═╝ ██║███████╗██║ ╚═╝ ██║███████╗██╔╝ ██╗
-    ╚═╝     ╚═╝╚══════╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝
-        The machine remembers what you forget
+ ███╗   ███╗███████╗███╗   ███╗███████╗██╗  ██╗
+ ████╗ ████║██╔════╝████╗ ████║██╔════╝╚██╗██╔╝
+ ██╔████╔██║█████╗  ██╔████╔██║█████╗   ╚███╔╝
+ ██║╚██╔╝██║██╔══╝  ██║╚██╔╝██║██╔══╝   ██╔██╗
+ ██║ ╚═╝ ██║███████╗██║ ╚═╝ ██║███████╗██╔╝ ██╗
+ ╚═╝     ╚═╝╚══════╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝
 ```
 
 > A memex (a portmanteau of "memory" and "index") is a hypothetical electromechanical device for interacting with microform documents and described in Vannevar Bush's 1945 article "As We May Think". Bush envisioned the memex as a device in which individuals would compress and store all of their books, records, and communications, "mechanized so that it may be consulted with exceeding speed and flexibility". The individual was supposed to use the memex as an automatic personal filing system, making the memex "an enlarged intimate supplement to his memory".

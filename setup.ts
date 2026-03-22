@@ -37,6 +37,18 @@ const SUPPORTED_AGENTS: Omit<AgentBootstrapInfo, "projectRoot">[] = [
   },
 ];
 
+const color = (message: string, makeBold: boolean = true): string => {
+  const reset = "\x1b[0m";
+  const bold = "\x1b[1m";
+  const color = "\x1b[32m"; // green
+
+  let code = "";
+  if (makeBold) code += bold;
+  code += color;
+
+  return code ? `${code}${message}${reset}` : message;
+};
+
 const LOGO = `
     ███╗   ███╗███████╗███╗   ███╗███████╗██╗  ██╗
     ████╗ ████║██╔════╝████╗ ████║██╔════╝╚██╗██╔╝
@@ -63,6 +75,7 @@ const prompt = (question: string): Promise<string> => {
 const createConfig = async (configPath: string): Promise<ConfigurationType> => {
   let user = "";
   let description = "";
+  let docsPath = "docs";
 
   console.log("\n=== Memex Setup ===\n");
   console.log("Let's set up your config.json\n");
@@ -85,11 +98,28 @@ const createConfig = async (configPath: string): Promise<ConfigurationType> => {
     }
   }
 
+  const docsPathInput = await prompt(
+    "\nPath to your notes folder (default: docs): ",
+  );
+  if (docsPathInput.trim()) {
+    docsPath = docsPathInput.trim();
+  }
+
   const config: ConfigurationType = {
     user: user.trim(),
     description: description.trim(),
-    docsPath: "docs",
+    docsPath,
   };
+
+  console.log("\n=== Config Summary ===\n");
+  console.log(JSON.stringify(config, null, 2));
+  console.log("");
+
+  const confirmed = await prompt("Looks good? (yes/no): ");
+  if (confirmed.toLowerCase() !== "yes" && confirmed.toLowerCase() !== "y") {
+    console.log("\nLet's try again...\n");
+    return createConfig(configPath);
+  }
 
   writeFileSync(configPath, JSON.stringify(config, null, 2));
   console.log(`\nCreated ${configPath}`);
@@ -105,6 +135,7 @@ const loadConfig = async (configPath: string): Promise<ConfigurationType> => {
     const config = JSON.parse(
       readFileSync(configPath, "utf-8"),
     ) as ConfigurationType;
+    console.log("Config loaded");
     return config;
   } catch {
     console.error("config.json is not valid JSON. Let's recreate it.\n");
@@ -130,6 +161,20 @@ const bootstrapAgent = (agentInfo: AgentBootstrapInfo) => {
     unlinkSync(agentTarget);
   }
   symlinkSync(join(agentInfo.projectRoot, ".agents/AGENTS.md"), agentTarget);
+
+  console.log(`${logPrefix} Cleaning old skill symlinks...`);
+  const agentSkillsDir = join(agentInfo.projectRoot, `${agentRoot}/skills`);
+  const currentSymlinks = readdirSync(agentSkillsDir);
+  const sourceSkillsDir = join(agentInfo.projectRoot, ".agents/skills");
+  const sourceSkills = readdirSync(sourceSkillsDir);
+
+  for (const symlink of currentSymlinks) {
+    if (!sourceSkills.includes(symlink)) {
+      const symlinkPath = join(agentSkillsDir, symlink);
+      unlinkSync(symlinkPath);
+      console.log(`${logPrefix} Removed old symlink: ${symlink}`);
+    }
+  }
 
   console.log(`${logPrefix} Creating skills symlinks...`);
   const skillsPath = join(agentInfo.projectRoot, ".agents/skills");
@@ -177,19 +222,29 @@ const initializeMemory = (projectRoot: string) => {
   }
 };
 
-const generateQmdConfig = (docsPath: string, description: string) => {
+const generateQmdConfig = (
+  projectRoot: string,
+  docsPath: string,
+  description: string,
+) => {
   const qmdConfigPath = join(homedir(), ".config/qmd/index.yml");
   mkdirSync(dirname(qmdConfigPath), { recursive: true });
 
+  const absoluteDocsPath = join(projectRoot, docsPath);
+  const absoluteMemoryPath = join(projectRoot, ".agents/memory");
+
   const yamlContent = `collections:
-  memex:
-    path: ${docsPath}
+  memex-docs:
+    path: ${absoluteDocsPath}
     pattern: "**/*.md"
     context:
       "": ${description}
+  memex-memory:
+    path: ${absoluteMemoryPath}
+    pattern: "**/*.md"
 `;
 
-  console.log(`Writing qmcConfig to ${qmdConfigPath}...`);
+  console.log(`Writing qmd config to ${qmdConfigPath}...`);
   writeFileSync(qmdConfigPath, yamlContent);
 };
 
@@ -227,40 +282,41 @@ const main = async () => {
   const __dirname = dirname(fileURLToPath(import.meta.url));
   const projectRoot = __dirname;
 
-  console.log("\n\n");
-  console.log(LOGO);
-  console.log("\n\n");
+  console.log(color(`\n${LOGO}\n`, false));
 
   const configPath = join(__dirname, "config.json");
-  console.log(`Loading config\n`);
+  console.log(color("\nLoading config"));
   const config = await loadConfig(configPath);
-  console.log(`Setting up memex for ${config.user}\n`);
 
-  console.log("Creating docs directory\n");
+  console.log(color("\nCreating docs directory"));
   mkdirSync(config.docsPath, { recursive: true });
 
-  console.log("Bootstrapping agents\n");
+  console.log(color("\nBootstrapping agents"));
   const agentsInfo = SUPPORTED_AGENTS.map(
     (a) => ({ ...a, projectRoot }) satisfies AgentBootstrapInfo,
   );
   await Promise.all(agentsInfo.map(bootstrapAgent));
 
-  console.log("Initializing memory from templates\n");
+  console.log(color("\nInitializing memory from templates"));
   initializeMemory(projectRoot);
 
-  const docsPath = join(projectRoot, config.docsPath);
-  console.log("Generating qmd config\n");
-  generateQmdConfig(docsPath, config.description);
+  console.log(color("\nGenerating qmd config"));
+  generateQmdConfig(projectRoot, config.docsPath, config.description);
 
-  console.log("Setup NodeJS for qmd\n");
+  console.log(color("\nSetup NodeJS for qmd"));
   qmdForceNodeJS();
 
-  console.log("Indexing docs\n");
+  console.log(color("\nIndexing docs"));
   qmdIndexAndEmbed();
 
-  console.log("\n=== Setup complete! ===\n");
+  console.log(color("\n=== Setup complete! ==="));
   console.log(
-    `Your memex is ready. Start adding notes to ${config.docsPath}/ "or ask me to remember something.`,
+    [
+      "  ",
+      "Your memex is ready",
+      `Start adding notes to: ${config.docsPath}/`,
+      "or ask me to remember something.",
+    ].join("\n  "),
   );
 };
 
