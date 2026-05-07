@@ -187,13 +187,14 @@ initialize_agent_files() {
   local memory_md="$agents_dir/MEMORY.md"
   local skills_dir="$agents_dir/skills"
   local daily_dir="$SCRIPT_DIR/$DOCS_PATH/daily"
+  local templates_dir="$SCRIPT_DIR/templates"
 
   mkdir -p "$agents_dir" "$skills_dir" "$daily_dir"
 
   if [[ -f "$agents_md" ]]; then
     log "AGENTS.md exists, skipping..."
   else
-    touch "$agents_md"
+    sed "s|{{docsPath}}|$DOCS_PATH|g" "$templates_dir/agents.template.md" > "$agents_md"
     log "Created $agents_md"
     AGENTS_MD_CREATED=true
   fi
@@ -204,6 +205,19 @@ initialize_agent_files() {
     echo "# Memory" > "$memory_md"
     log "Created $memory_md"
   fi
+
+  for skill in docsearch today; do
+    local skill_dir="$skills_dir/$skill"
+    local skill_file="$skill_dir/SKILL.md"
+    local template="$templates_dir/skill-$skill.template.md"
+    if [[ -f "$skill_file" ]]; then
+      log "$skill skill exists, skipping..."
+    else
+      mkdir -p "$skill_dir"
+      sed "s|{{docsPath}}|$DOCS_PATH|g" "$template" > "$skill_file"
+      log "Created $skill skill"
+    fi
+  done
 }
 
 # ── qmd Config ─────────────────────────────────────────────────────────────
