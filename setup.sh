@@ -121,6 +121,18 @@ load_config() {
   fi
 }
 
+# ── Gitignore ─────────────────────────────────────────────────────────────
+
+update_gitignore() {
+  local gitignore="$SCRIPT_DIR/.gitignore"
+  if ! grep -qxF "$DOCS_PATH" "$gitignore" 2>/dev/null; then
+    echo "$DOCS_PATH" >> "$gitignore"
+    log "Added $DOCS_PATH to .gitignore"
+  else
+    log "$DOCS_PATH already in .gitignore, skipping..."
+  fi
+}
+
 # ── Agent Bootstrap ────────────────────────────────────────────────────────
 
 bootstrap_agent() {
@@ -238,6 +250,9 @@ install_dependencies
 
 bold_green "\nLoading config"
 load_config
+
+bold_green "\nUpdating .gitignore"
+update_gitignore
 
 bold_green "\nCreating docs directory"
 mkdir -p "$SCRIPT_DIR/$DOCS_PATH"
