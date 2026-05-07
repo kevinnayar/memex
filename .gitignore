@@ -11,12 +11,3 @@ bun.lock
 # Agents
 .claude
 .opencode
-
-# Memory (runtime, not versioned)
-.agents/memory/*.md
-.agents/memory/daily/
-
-# Templates are tracked (empty starters)
-!.agents/memory.templates/
-.agents/memory.templates/
-

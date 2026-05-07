@@ -9,68 +9,71 @@
  ╚═╝     ╚═╝╚══════╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝
 ```
 
-> A memex (a portmanteau of "memory" and "index") is a hypothetical electromechanical device for interacting with microform documents and described in Vannevar Bush's 1945 article "As We May Think". Bush envisioned the memex as a device in which individuals would compress and store all of their books, records, and communications, "mechanized so that it may be consulted with exceeding speed and flexibility". The individual was supposed to use the memex as an automatic personal filing system, making the memex "an enlarged intimate supplement to his memory".
+> The machine remembers what you forget.
 
-— [Wikipedia](https://en.wikipedia.org/wiki/Memex)
+Personal knowledge management with AI agents. Write notes in Markdown, search and query them with Claude Code or OpenCode.
 
-## Overview
+## Requirements
 
-Personal knowledge management with AI agents. The machine remembers what you forget.
+At least one AI agent — the only things you need to install manually:
+
+- [Claude Code](https://claude.ai/code)
+- [OpenCode](https://opencode.ai/)
+
+The following are also required and will be installed automatically by `setup.sh` if missing:
+
+- [Node.js](https://nodejs.org) (via nvm)
+- [Bun](https://bun.sh)
+- [qmd](https://github.com/uses-ink/qmd)
+
+## How it works
+
+Memex is a folder of Markdown files paired with an AI agent that can search, retrieve, and reason over them. It works with any folder of Markdown — Obsidian, iA Writer, plain files, whatever you write in. No lock-in.
+
+Your notes are gitignored and stay private — on your machine or synced via Obsidian Sync, iCloud, Dropbox, etc. They are never committed to this repo.
+
+## Directory Structure
+
+```
+memex/               ← this repo
+└── docs/            ← your notes (or whatever you set as docsPath)
+    ├── daily/
+    └── ...
+```
+
+If you use Obsidian, point `docsPath` at your vault. The `.obsidian/` folder will be ignored by qmd — only your Markdown files are indexed.
 
 ## Setup
+
+**Step 1** — Install [Claude Code](https://claude.ai/code) or [OpenCode](https://opencode.ai/) (or both).
+
+**Step 2** — Configure `config.json` in the repo root:
+
+```json
+{
+  "user": "Your Name",
+  "description": "Brief description of your notes (used for search context)",
+  "docsPath": "docs"
+}
+```
+
+**Step 3** — Run setup:
 
 ```bash
 ./setup.sh
 ```
 
-Setup will prompt for your name and a description of your notes.
+The script installs Bun and qmd if they're not already present, then wires everything up. Re-run any time to refresh symlinks or re-index.
 
-## What's Included
+### What setup does
 
-| Component                   | Description                                    |
-| --------------------------- | ---------------------------------------------- |
-| `docs/`                     | Your knowledge corpus (gitignored, private)    |
-| `.agents/memory/`           | Persistent memory across sessions (gitignored) |
-| `.agents/memory.templates/` | Persistent memory templates as examples        |
-| `.agents/skills/`           | Agent skills for search, memory, Q&A           |
+1. **Dependencies** — installs Node.js (via nvm), Bun, and qmd if missing.
+2. **Agent files** — creates the following inside `{docsPath}/agents/` if they don't exist:
+   - `AGENTS.md` — your agent's system definition: how it should behave, what your notes are about, any rules or preferences
+   - `MEMORY.md` — persistent memory written and read across sessions
+   - `skills/` — folder for custom agent skills
+3. **Agent symlinks** — creates `.claude/` and `.opencode/` config directories and symlinks the agent files and settings so Claude Code and OpenCode pick them up automatically.
+4. **qmd config** — writes `~/.config/qmd/index.yml` pointing at your notes and agent memory.
+5. **Index** — runs `qmd update && qmd embed` to build the semantic search index.
 
-## Memory System
-
-Two layers of memory:
-
-- **MEMORY.md** - Curated long-term (decisions, preferences, durable facts)
-- **daily/YYYY-MM-DD.md** - Session logs (context, notes)
-
-### Tips
-
-- Say **"remember this"** explicitly - don't assume the model will remember
-- Ask **"write this to memory"** if you want something to stick
-- **Durable facts** → MEMORY.md (preferences, decisions, patterns)
-- **Daily context** → daily/YYYY-MM-DD.md (session notes)
-
-## Syncing to Dropbox
-
-Since your docs folder (defined by `docsPath` in config.json) is gitignored, you can sync it separately with Dropbox.
-
-If your docs are already in Dropbox:
-
-```bash
-ln -s ~/Dropbox/docs ~/src/memex/docs
-```
-
-If starting fresh:
-
-```bash
-# Move docs to Dropbox
-mv docs ~/Dropbox/docs
-
-# Symlink back
-ln -s ~/Dropbox/docs docs
-```
-
-Replace `docs` with your actual docs folder name if different.
-
-## Dependencies
-
-- [qmd](https://github.com/gptscript-ai/qmd) - Semantic search over docs
-- [Bun](https://bun.sh) - JavaScript runtime (installed by setup)
+If `AGENTS.md` is new and empty, the script will prompt you with a message to open your agent and set it up.
