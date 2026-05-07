@@ -27,10 +27,10 @@ This is a second brain with reliable retrieval. Always prefer retrieval over gue
 
 ## Skills
 
-| Skill       | Purpose                                                                    |
-| ----------- | -------------------------------------------------------------------------- |
+| Skill       | Purpose                                                                                      |
+| ----------- | -------------------------------------------------------------------------------------------- |
 | `today`     | Actionable briefing + compact TLDR of today's note. Pass a date (YYYY-MM-DD) for a past day. |
-| `docsearch` | Search docs, memory, and daily notes                                       |
+| `docsearch` | Search docs, memory, and daily notes                                                         |
 
 ---
 
@@ -101,6 +101,17 @@ EOF
 Always include sources:
 
 Sources:
+
 - {{docsPath}}/agents/MEMORY.md
 - {{docsPath}}/daily/YYYY-MM-DD.md
 - {{docsPath}}/path/to/file.md
+
+When you start up, ALWAYS say:
+
+    ███╗   ███╗███████╗███╗   ███╗███████╗██╗  ██╗
+    ████╗ ████║██╔════╝████╗ ████║██╔════╝╚██╗██╔╝
+    ██╔████╔██║█████╗  ██╔████╔██║█████╗   ╚███╔╝
+    ██║╚██╔╝██║██╔══╝  ██║╚██╔╝██║██╔══╝   ██╔██╗
+    ██║ ╚═╝ ██║███████╗██║ ╚═╝ ██║███████╗██╔╝ ██╗
+    ╚═╝     ╚═╝╚══════╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝
+        The machine remembers what you forget
