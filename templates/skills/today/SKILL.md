@@ -14,16 +14,20 @@ When called with a past date, show only the TLDR of that day's note.
 - If an argument looks like a date (YYYY-MM-DD), use it as the target date and set `past_date = true`
 - Otherwise use today's date and set `past_date = false`
 
+### Always (regardless of date)
+1. Read `{{docsPath}}/agents/MEMORY.md`
+2. Read `{{docsPath}}/agents/WORK-MEMORY.md`
+
 ### If `past_date = true`
-1. Read `{{docsPath}}/daily/$DATE.md`
-2. If the file doesn't exist, say so
-3. If it exists, show the **TLDR** only (see TLDR rules below)
+3. Read `{{docsPath}}/daily/$DATE.md`
+4. If the file doesn't exist, say so
+5. If it exists, show the **TLDR** only (see TLDR rules below)
 
 ### If `past_date = false` (today)
-1. Read today's daily note: `{{docsPath}}/daily/$DATE.md`
-2. Read the last 7 daily notes for context (find the most recent files in `{{docsPath}}/daily/`)
-3. Produce the **Briefing** (see below)
-4. Then produce the **TLDR** of today's note
+3. Read today's daily note: `{{docsPath}}/daily/$DATE.md`
+4. Read the last 7 daily notes for context (find the most recent files in `{{docsPath}}/daily/`)
+5. Produce the **Briefing** (see below)
+6. Then produce the **TLDR** of today's note
 
 ---
 
