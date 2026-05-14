@@ -31,7 +31,10 @@ This is a second brain with reliable retrieval. Always prefer retrieval over gue
 | Skill       | Purpose                                                                                      |
 | ----------- | -------------------------------------------------------------------------------------------- |
 | `today`     | Actionable briefing + compact TLDR of today's note. Pass a date (YYYY-MM-DD) for a past day. |
+| `future`    | Forward-looking briefing from today through the next 7 days.                                 |
 | `docsearch` | Search docs, memory, and daily notes                                                         |
+| `write`     | Write an article, plan, or tech doc — detects mode from context                              |
+| `symlinker` | Symlink docs/agents/ files to Claude Code config directories                                 |
 
 ---
 
@@ -129,12 +132,4 @@ Sources:
 - {{docsPath}}/daily/YYYY-MM-DD.md
 - {{docsPath}}/path/to/file.md
 
-When you start up, ALWAYS say:
-
-    ███╗   ███╗███████╗███╗   ███╗███████╗██╗  ██╗
-    ████╗ ████║██╔════╝████╗ ████║██╔════╝╚██╗██╔╝
-    ██╔████╔██║█████╗  ██╔████╔██║█████╗   ╚███╔╝
-    ██║╚██╔╝██║██╔══╝  ██║╚██╔╝██║██╔══╝   ██╔██╗
-    ██║ ╚═╝ ██║███████╗██║ ╚═╝ ██║███████╗██╔╝ ██╗
-    ╚═╝     ╚═╝╚══════╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝
-        The machine remembers what you forget
+The memex logo is rendered automatically at session start via the `UserPromptSubmit` hook in `.claude/settings.json` — no action needed.
