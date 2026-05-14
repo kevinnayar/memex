@@ -169,6 +169,30 @@ bootstrap_agent() {
     ln -sf "$source_skills/$skill" "$skills_dir/$skill"
   done
 
+  local commands_dir="$agent_dir/commands"
+  mkdir -p "$commands_dir"
+
+  log "Cleaning old command symlinks..."
+  if [[ -d "$commands_dir" ]]; then
+    while IFS= read -r cmd_name; do
+      [[ -n "$cmd_name" ]] || continue
+      local skill_name="${cmd_name%.md}"
+      if [[ ! -d "$source_skills/$skill_name" ]]; then
+        rm -f "${commands_dir:?}/$cmd_name"
+        log "Removed stale command: $cmd_name"
+      fi
+    done < <(ls "$commands_dir" 2>/dev/null)
+  fi
+
+  log "Creating command symlinks..."
+  for skill_path in "$source_skills"/*/; do
+    [[ -d "$skill_path" ]] || continue
+    local skill
+    skill=$(basename "$skill_path")
+    log "Creating command symlink for: $skill..."
+    ln -sf "$source_skills/$skill/SKILL.md" "$commands_dir/$skill.md"
+  done
+
   if [[ "$name" == "claude" ]]; then
     for file in settings.json memex-logo.sh; do
       log "Creating $file symlink..."
@@ -183,41 +207,23 @@ AGENTS_MD_CREATED=false
 
 initialize_agent_files() {
   local agents_dir="$SCRIPT_DIR/$DOCS_PATH/agents"
-  local agents_md="$agents_dir/AGENTS.md"
-  local memory_md="$agents_dir/MEMORY.md"
-  local skills_dir="$agents_dir/skills"
   local daily_dir="$SCRIPT_DIR/$DOCS_PATH/daily"
   local templates_dir="$SCRIPT_DIR/templates"
 
-  mkdir -p "$agents_dir" "$skills_dir" "$daily_dir"
+  mkdir -p "$agents_dir" "$daily_dir"
 
-  if [[ -f "$agents_md" ]]; then
-    log "AGENTS.md exists, skipping..."
-  else
-    sed "s|{{docsPath}}|$DOCS_PATH|g" "$templates_dir/agents.template.md" > "$agents_md"
-    log "Created $agents_md"
-    AGENTS_MD_CREATED=true
-  fi
-
-  if [[ -f "$memory_md" ]]; then
-    log "MEMORY.md exists, skipping..."
-  else
-    echo "# Memory" > "$memory_md"
-    log "Created $memory_md"
-  fi
-
-  for skill in docsearch today; do
-    local skill_dir="$skills_dir/$skill"
-    local skill_file="$skill_dir/SKILL.md"
-    local template="$templates_dir/skill-$skill.template.md"
-    if [[ -f "$skill_file" ]]; then
-      log "$skill skill exists, skipping..."
+  while IFS= read -r template; do
+    local rel="${template#$templates_dir/}"
+    local dest="$agents_dir/$rel"
+    if [[ -f "$dest" ]]; then
+      log "$rel exists, skipping..."
     else
-      mkdir -p "$skill_dir"
-      sed "s|{{docsPath}}|$DOCS_PATH|g" "$template" > "$skill_file"
-      log "Created $skill skill"
+      mkdir -p "$(dirname "$dest")"
+      sed "s|{{docsPath}}|$DOCS_PATH|g" "$template" > "$dest"
+      log "Created $rel"
+      [[ "$rel" == "AGENTS.md" ]] && AGENTS_MD_CREATED=true
     fi
-  done
+  done < <(find "$templates_dir" -type f | sort)
 }
 
 # ── qmd Config ─────────────────────────────────────────────────────────────

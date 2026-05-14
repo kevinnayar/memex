@@ -11,6 +11,7 @@ This is a second brain with reliable retrieval. Always prefer retrieval over gue
 ├── agents/             ← agent system config: system definition, long-term memory, and skills
 │   ├── AGENTS.md       ← system definition (symlinked to .claude/CLAUDE.md)
 │   ├── MEMORY.md       ← durable long-term memory
+│   ├── WORK-MEMORY.md  ← durable work-specific memory
 │   └── skills/         ← agent skills (each skill is a SKILL.md with a symlink in .claude/commands/)
 └── daily/
     └── YYYY-MM-DD.md   ← daily notes: tasks, goals, logs, thoughts
@@ -39,8 +40,9 @@ This is a second brain with reliable retrieval. Always prefer retrieval over gue
 Read at the start of each session:
 
 1. `{{docsPath}}/agents/MEMORY.md`
-2. Today's daily note: `{{docsPath}}/daily/YYYY-MM-DD.md` (if it exists)
-3. Yesterday's daily note (if it exists)
+2. `{{docsPath}}/agents/WORK-MEMORY.md`
+3. Today's daily note: `{{docsPath}}/daily/YYYY-MM-DD.md` (if it exists)
+4. Yesterday's daily note (if it exists)
 
 ---
 
@@ -49,8 +51,9 @@ Read at the start of each session:
 ### Structure
 
 ```
-{{docsPath}}/agents/MEMORY.md      ← durable facts (decisions, preferences, patterns)
-{{docsPath}}/daily/YYYY-MM-DD.md   ← session context (notes, tasks, observations)
+{{docsPath}}/agents/MEMORY.md           ← durable personal facts (decisions, preferences, patterns)
+{{docsPath}}/agents/WORK-MEMORY.md      ← durable work facts (projects, team, decisions, direction)
+{{docsPath}}/daily/YYYY-MM-DD.md        ← session context (notes, tasks, observations)
 ```
 
 ### When to Write
@@ -60,13 +63,33 @@ Read at the start of each session:
 - Information will be useful in future sessions
 - User asks to create a note, log something, or record a task
 
+### What Goes Where
+
+| Content | File |
+|---|---|
+| Personal preferences, habits, goals, people, life context | `MEMORY.md` |
+| Work projects, team context, decisions, strategic direction, patterns | `WORK-MEMORY.md` |
+| Today's tasks, logs, notes, observations | Daily note |
+
 ### How to Write
 
 Always **APPEND** — never overwrite or delete entries.
 
 ```bash
-# Append to MEMORY.md
+# Append to MEMORY.md (personal)
 cat >> {{docsPath}}/agents/MEMORY.md << 'EOF'
+
+## <Section>
+
+### YYYY-MM-DD — <Title>
+
+Content here
+EOF
+```
+
+```bash
+# Append to WORK-MEMORY.md (work)
+cat >> {{docsPath}}/agents/WORK-MEMORY.md << 'EOF'
 
 ## <Section>
 
@@ -90,8 +113,8 @@ EOF
 ### Rules
 
 1. Always APPEND — never overwrite or delete
-2. Use today's date for daily log entries
-3. Organize MEMORY.md into sections: Decisions, Preferences, Notes
+2. Use today's date for entries
+3. When in doubt about which memory file: personal life → MEMORY.md, work → WORK-MEMORY.md
 4. Be concise — memory is for facts, not essays
 
 ---
