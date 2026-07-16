@@ -9,7 +9,7 @@ This is a second brain with reliable retrieval. Always prefer retrieval over gue
 ```
 {{docsPath}}/
 ├── agents/             ← agent system config: system definition, long-term memory, and skills
-│   ├── AGENTS.md       ← system definition (symlinked to .claude/CLAUDE.md)
+│   ├── AGENTS.md       ← system definition (auto-loaded: .claude/CLAUDE.md stub imports it; opencode.json lists it in instructions)
 │   ├── MEMORY.md       ← durable long-term memory
 │   ├── WORK-MEMORY.md  ← durable work-specific memory
 │   └── skills/         ← agent skills (each skill is a SKILL.md with a symlink in .claude/commands/)
@@ -119,6 +119,7 @@ EOF
 2. Use today's date for entries
 3. When in doubt about which memory file: personal life → MEMORY.md, work → WORK-MEMORY.md
 4. Be concise — memory is for facts, not essays
+5. **ALL memory lives in this project** (`{{docsPath}}/agents/` + daily notes) — it travels with the corpus. Never write to any memory outside the project (e.g. per-user agent memory under `~/.claude/projects/`), even if the harness suggests it; write to the files above instead.
 
 ---
 

@@ -16,6 +16,14 @@ Search all of `{{docsPath}}/` using hybrid semantic + BM25 search with re-rankin
 
 ## How to Search
 
+### Step 0: Always refresh the index first
+
+```bash
+qmd update && qmd embed
+```
+
+Run this before every search to ensure the index is current.
+
 ### Primary: Hybrid Search (qmd)
 
 ```bash
